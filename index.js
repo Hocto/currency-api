@@ -6,6 +6,7 @@ const morgan = require("morgan");
 const currencies = require("./common/currencies");
 const isNumber = require("./common/isNumber");
 const formatter = require("./common/formatter");
+const moesifMiddleware = require("./common/moesif");
 
 const app = express();
 
@@ -14,6 +15,7 @@ let articles = {};
 let currencyList = {};
 
 app.use(morgan("tiny"));
+app.use(moesifMiddleware);
 
 app.listen(PORT, () => {
   console.log(`server running on PORT: ${PORT}`);
