@@ -34,6 +34,7 @@ app.get("/currency/:from/:to/:amount", (req, res) => {
   if (currencies.get(from) == undefined || currencies.get(to) == undefined) {
     return res.json({ message: "Invalid currency code" });
   }
+  let millis = new Date().getTime();
   axios
     .get(
       "https://www.xe.com/currencyconverter/convert/?Amount=" +
@@ -44,6 +45,7 @@ app.get("/currency/:from/:to/:amount", (req, res) => {
         to
     )
     .then((response) => {
+      console.log("Response time: " + (new Date().getTime() - millis));
       const html = response.data;
       const $ = cheerio.load(html);
       $(".result__BigRate-sc-1bsijpp-1", html).each(function () {
@@ -64,6 +66,7 @@ app.get("/currency/:from/:to/:amount", (req, res) => {
           updatedDate: new Date(),
         };
       });
+      console.log("Response will be returned in : " + (new Date().getTime() - millis));
       return res.json(articles);
     })
     .catch((e) => {
