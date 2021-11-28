@@ -48,7 +48,7 @@ app.get("/currency/:from/:to/:amount", (req, res) => {
       console.log("Response time: " + (new Date().getTime() - millis));
       const html = response.data;
       const $ = cheerio.load(html);
-      $(".result__BigRate-sc-1bsijpp-1", html).each(function () {
+      /*$(".result__BigRate-sc-1bsijpp-1", html).each(function () {
         const money = $(this).text().split(" ")[0];
         const fromFormatter = formatter(from);
         result = fromFormatter.format(amount);
@@ -65,7 +65,7 @@ app.get("/currency/:from/:to/:amount", (req, res) => {
           },
           updatedDate: new Date(),
         };
-      });
+      });*/
       console.log("Response will be returned in : " + (new Date().getTime() - millis));
       return res.json(articles);
     })
