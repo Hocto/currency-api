@@ -42,6 +42,7 @@ app.get("/currency/:from/:to/:amount", (req, res) => {
       new Date().getTime() - 30000 <
       cacheCurrency.get(from + "-" + to).updatedDate.getTime()
     ) {
+      console.log("Data is old to view, it will be fetched.");
       let millis = new Date().getTime();
       axios
         .get(
@@ -74,7 +75,7 @@ app.get("/currency/:from/:to/:amount", (req, res) => {
           return { error: true, cause: e };
         });
     } else {
-      console.log("Data is coming from cache..");
+      console.log("Data is coming from cache.");
       return res.json(
         generateArticle(
           from,
@@ -85,6 +86,7 @@ app.get("/currency/:from/:to/:amount", (req, res) => {
       );
     }
   } else {
+    console.log("Fetched this rates for first time.");
     let millis = new Date().getTime();
     axios
       .get(
