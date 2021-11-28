@@ -74,6 +74,7 @@ app.get("/currency/:from/:to/:amount", (req, res) => {
           return { error: true, cause: e };
         });
     } else {
+      console.log("Data is coming from cache..");
       return res.json(
         generateArticle(
           from,
