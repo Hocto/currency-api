@@ -13,6 +13,7 @@ const app = express();
 let articles = {};
 
 let currencyList = {};
+let cacheCurrency = new Map();
 
 app.use(morgan("tiny"));
 app.use(moesifMiddleware);
@@ -34,45 +35,87 @@ app.get("/currency/:from/:to/:amount", (req, res) => {
   if (currencies.get(from) == undefined || currencies.get(to) == undefined) {
     return res.json({ message: "Invalid currency code" });
   }
-  let millis = new Date().getTime();
-  axios
-    .get(
-      "https://www.xe.com/currencyconverter/convert/?Amount=" +
-        amount +
-        "&From=" +
-        from +
-        "&To=" +
-        to
-    )
-    .then((response) => {
-      console.log("Response time: " + (new Date().getTime() - millis));
-      const html = response.data;
-      const $ = cheerio.load(html);
-      $(".result__BigRate-sc-1bsijpp-1", html).each(function () {
-        const money = $(this).text().split(" ")[0];
-        const fromFormatter = formatter(from);
-        result = fromFormatter.format(amount);
-        articles = {
-          baseCurrency: {
-            code: from,
-            name: currencies.get(from),
-            amount: !result.includes(".") ? result + ".00" : result,
-          },
-          rateCurrency: {
-            code: to,
-            name: currencies.get(to),
-            amount: money,
-          },
-          updatedDate: new Date(),
-        };
+  const fromFormatter = formatter(from);
+  const result = fromFormatter.format(amount);
+  if (cacheCurrency.get(from + "-" + to) !== undefined) {
+    if (
+      new Date().getTime() - 30000 <
+      cacheCurrency.get(from + "-" + to).updatedDate.getTime()
+    ) {
+      let millis = new Date().getTime();
+      axios
+        .get(
+          "https://www.xe.com/currencyconverter/convert/?Amount=" +
+            1 +
+            "&From=" +
+            from +
+            "&To=" +
+            to
+        )
+        .then((response) => {
+          console.log("Response time: " + (new Date().getTime() - millis));
+          const html = response.data;
+          const $ = cheerio.load(html);
+          let currency;
+          $(".result__BigRate-sc-1bsijpp-1", html).each(function () {
+            const money = $(this).text().split(" ")[0];
+            currency = { money: money, updatedDate: new Date() };
+            cacheCurrency.set(from + "-" + to, currency);
+          });
+          console.log(
+            "Response will be returned in : " + (new Date().getTime() - millis)
+          );
+          return res.json(
+            generateArticle(from, to, amount * currency.money, result)
+          );
+        })
+        .catch((e) => {
+          console.log("error: " + e);
+          return { error: true, cause: e };
+        });
+    } else {
+      return res.json(
+        generateArticle(
+          from,
+          to,
+          amount * cacheCurrency.get(from + "-" + to),
+          result
+        )
+      );
+    }
+  } else {
+    let millis = new Date().getTime();
+    axios
+      .get(
+        "https://www.xe.com/currencyconverter/convert/?Amount=" +
+          1 +
+          "&From=" +
+          from +
+          "&To=" +
+          to
+      )
+      .then((response) => {
+        console.log("Response time: " + (new Date().getTime() - millis));
+        const html = response.data;
+        const $ = cheerio.load(html);
+        let currency;
+        $(".result__BigRate-sc-1bsijpp-1", html).each(function () {
+          const money = $(this).text().split(" ")[0];
+          currency = { money: money, updatedDate: new Date() };
+          cacheCurrency.set(from + "-" + to, currency);
+        });
+        console.log(
+          "Response will be returned in : " + (new Date().getTime() - millis)
+        );
+        return res.json(
+          generateArticle(from, to, amount * currency.money, result)
+        );
+      })
+      .catch((e) => {
+        console.log("error: " + e);
+        return { error: true, cause: e };
       });
-      console.log("Response will be returned in : " + (new Date().getTime() - millis));
-      return res.json(articles);
-    })
-    .catch((e) => {
-      console.log("error: " + e);
-      return { error: true, cause: e };
-    });
+  }
 });
 
 app.get("/currencies", (req, res) => {
@@ -93,3 +136,51 @@ app.get("/currencies", (req, res) => {
       return { error: true, cause: e };
     });
 });
+
+const getCurrency = (from, to, amount) => {
+  let millis = new Date().getTime();
+  axios
+    .get(
+      "https://www.xe.com/currencyconverter/convert/?Amount=" +
+        amount +
+        "&From=" +
+        from +
+        "&To=" +
+        to
+    )
+    .then((response) => {
+      console.log("Response time: " + (new Date().getTime() - millis));
+      const html = response.data;
+      const $ = cheerio.load(html);
+      let money;
+      $(".result__BigRate-sc-1bsijpp-1", html).each(function () {
+        money = $(this).text().split(" ")[0];
+      });
+      console.log(
+        "Response will be returned in : " + (new Date().getTime() - millis)
+      );
+      const currency = { money: money, updatedDate: new Date() };
+      cacheCurrency.set(from + "-" + to, currency);
+      return JSON.stringify(currency);
+    })
+    .catch((e) => {
+      console.log("error: " + e);
+      return { error: true, cause: e };
+    });
+};
+
+const generateArticle = (from, to, money, result) => {
+  return {
+    baseCurrency: {
+      code: from,
+      name: currencies.get(from),
+      amount: !result.includes(".") ? result + ".00" : result,
+    },
+    rateCurrency: {
+      code: to,
+      name: currencies.get(to),
+      amount: JSON.stringify(money),
+    },
+    updatedDate: new Date(),
+  };
+};
