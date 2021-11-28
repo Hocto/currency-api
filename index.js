@@ -39,7 +39,7 @@ app.get("/currency/:from/:to/:amount", (req, res) => {
   const result = fromFormatter.format(amount);
   if (cacheCurrency.get(from + "-" + to) !== undefined) {
     if (
-      new Date().getTime() - 30000 >
+      new Date().getTime() - 60000 >
       cacheCurrency.get(from + "-" + to).updatedDate.getTime()
     ) {
       console.log("Data is old to view, it will be fetched.");
