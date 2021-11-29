@@ -4,13 +4,12 @@ const cheerio = require("cheerio");
 const axios = require("axios");
 const morgan = require("morgan");
 const currencies = require("./common/currencies");
+const cachedRates = require("./common/cachedRates");
 const isNumber = require("./common/isNumber");
 const formatter = require("./common/formatter");
 const moesifMiddleware = require("./common/moesif");
 
 const app = express();
-
-let articles = {};
 
 let currencyList = {};
 let cacheCurrency = new Map();
@@ -78,12 +77,7 @@ app.get("/currency/:from/:to/:amount", (req, res) => {
       console.log("Data is coming from cache.");
       const currency = cacheCurrency.get(from + "-" + to);
       return res.json(
-        generateArticle(
-          from,
-          to,
-          amount * currency.money,
-          result
-        )
+        generateArticle(from, to, amount * currency.money, result)
       );
     }
   } else {
@@ -188,3 +182,76 @@ const generateArticle = (from, to, money, result) => {
     updatedDate: new Date(),
   };
 };
+
+const cacheInit = (from, to) => {
+  let millis = new Date().getTime();
+  console.log("from: " + from + " to: " + to);
+  axios
+    .get(
+      "https://www.xe.com/currencyconverter/convert/?Amount=" +
+        1 +
+        "&From=" +
+        cachedRates[from] +
+        "&To=" +
+        cachedRates[to]
+    )
+    .then((response) => {
+      console.log("Response time: " + (new Date().getTime() - millis));
+      const html = response.data;
+      const $ = cheerio.load(html);
+      let currency;
+      $(".result__BigRate-sc-1bsijpp-1", html).each(function () {
+        const money = $(this).text().split(" ")[0];
+        currency = { money: money, updatedDate: new Date() };
+        cacheCurrency.set(cachedRates[from] + "-" + cachedRates[to], currency);
+      });
+      console.log(
+        "Response will be returned in : " + (new Date().getTime() - millis)
+      );
+    })
+    .catch((e) => {
+      console.log("error: " + e);
+    });
+};
+
+const init = (from, to, reverse) => {
+  cacheInit(from, to);
+  if (reverse) {
+    if (to == 0) {
+      if (from == 0) {
+        reverse = false;
+      } else {
+        from = from - 1;
+      }
+      if (reverse) {
+        to = cachedRates.length - 1;
+      }
+    } else {
+      to = to - 1;
+    }
+  } else {
+    if (to == cachedRates.length - 1) {
+      if (from == cachedRates.length - 1) {
+        reverse = true;
+      } else {
+        from = from + 1;
+      }
+      if (!reverse) {
+        to = 0;
+      }
+    } else {
+      to = to + 1;
+    }
+  }
+  /*cacheCurrency.forEach((v, k) => {
+    console.log(
+      "Key: " + JSON.stringify(k) + " - Value: " + JSON.stringify(v.money)
+    );
+  });*/
+  setTimeout(function () {
+    init(from, to, reverse);
+  }, 3000);
+};
+
+var reverse = false;
+init(0, 0, reverse);
