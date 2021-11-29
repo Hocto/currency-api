@@ -184,7 +184,6 @@ const generateArticle = (from, to, money, result) => {
 };
 
 const cacheInit = (from, to) => {
-  let millis = new Date().getTime();
   console.log("from: " + from + " to: " + to);
   axios
     .get(
@@ -196,7 +195,6 @@ const cacheInit = (from, to) => {
         cachedRates[to]
     )
     .then((response) => {
-      console.log("Response time: " + (new Date().getTime() - millis));
       const html = response.data;
       const $ = cheerio.load(html);
       let currency;
@@ -205,9 +203,6 @@ const cacheInit = (from, to) => {
         currency = { money: money, updatedDate: new Date() };
         cacheCurrency.set(cachedRates[from] + "-" + cachedRates[to], currency);
       });
-      console.log(
-        "Response will be returned in : " + (new Date().getTime() - millis)
-      );
     })
     .catch((e) => {
       console.log("error: " + e);
