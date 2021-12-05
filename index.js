@@ -117,7 +117,13 @@ app.get("/currency/:from/:to/:amount", (req, res) => {
 });
 
 app.get("/currencies", (req, res) => {
-  axios
+  if( cacheCurrency.get("currencies") !== undefined ){
+    console.log("cached");
+    return res.json(cacheCurrency.get("currencies"))
+  }
+  else {
+    console.log("not cached");
+    axios
     .get("https://www.xe.com/currency/")
     .then((response) => {
       const html = response.data;
@@ -127,12 +133,14 @@ app.get("/currencies", (req, res) => {
         const codes = baseCode.split("-");
         currencyList[codes[0].trim()] = codes[1].trim();
       });
+      cacheCurrency.set("currencies", currencyList);
       return res.json(currencyList);
     })
     .catch((e) => {
       console.log("Error: " + e);
       return { error: true, cause: e };
     });
+  }
 });
 
 const getCurrency = (from, to, amount) => {
