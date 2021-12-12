@@ -8,6 +8,7 @@ const cachedRates = require("./common/cachedRates");
 const isNumber = require("./common/isNumber");
 const formatter = require("./common/formatter");
 const moesifMiddleware = require("./common/moesif");
+const serverless = require("serverless-http");
 
 const app = express();
 
@@ -17,11 +18,13 @@ let cacheCurrency = new Map();
 app.use(morgan("tiny"));
 app.use(moesifMiddleware);
 
+const router = express.Router();
+
 app.listen(PORT, () => {
   console.log(`server running on PORT: ${PORT}`);
 });
 
-app.get("/currency/:from/:to/:amount", (req, res) => {
+router.get("/currency/:from/:to/:amount", (req, res) => {
   const from = req.params.from;
   const to = req.params.to;
   const amount = req.params.amount;
@@ -116,7 +119,7 @@ app.get("/currency/:from/:to/:amount", (req, res) => {
   }
 });
 
-app.get("/currencies", (req, res) => {
+router.get("/currencies", (req, res) => {
   if( cacheCurrency.get("currencies") !== undefined ){
     console.log("cached");
     return res.json(cacheCurrency.get("currencies"))
@@ -142,6 +145,8 @@ app.get("/currencies", (req, res) => {
     });
   }
 });
+
+app.use('/.netlify/functions/index', router);
 
 const getCurrency = (from, to, amount) => {
   let millis = new Date().getTime();
@@ -258,3 +263,5 @@ const init = (from, to, reverse) => {
 
 var reverse = false;
 init(0, 0, reverse);
+
+module.exports.handler = serverless(app);
