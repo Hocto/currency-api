@@ -60,6 +60,7 @@ app.get("/currency/:from/:to/:amount", (req, res) => {
           $(".result__BigRate-sc-1bsijpp-1", html).each(function () {
             const money = $(this).text().split(" ")[0];
             currency = { money: money, updatedDate: new Date() };
+            console.log("Currency: ", JSON.stringify(currency));
             cacheCurrency.set(from + "-" + to, currency);
           });
           console.log(
@@ -76,6 +77,7 @@ app.get("/currency/:from/:to/:amount", (req, res) => {
     } else {
       console.log("Data is coming from cache.");
       const currency = cacheCurrency.get(from + "-" + to);
+      console.log("Currency: ", JSON.stringify(currency));
       return res.json(
         generateArticle(from, to, amount * currency.money, result)
       );
@@ -100,6 +102,7 @@ app.get("/currency/:from/:to/:amount", (req, res) => {
         $(".result__BigRate-sc-1bsijpp-1", html).each(function () {
           const money = $(this).text().split(" ")[0];
           currency = { money: money, updatedDate: new Date() };
+          console.log("Currency: ", JSON.stringify(currency));
           cacheCurrency.set(from + "-" + to, currency);
         });
         console.log(
