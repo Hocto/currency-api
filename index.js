@@ -6,6 +6,8 @@ const morgan = require("morgan");
 const currencies = require("./common/currencies");
 const cachedRates = require("./common/cachedRates");
 const isNumber = require("./common/isNumber");
+const numberWithCommas = require("./common/numberWithCommas");
+const withTwoDecimals = require("./common/withTwoDecimals");
 const formatter = require("./common/formatter");
 const moesifMiddleware = require("./common/moesif");
 
@@ -58,7 +60,8 @@ app.get("/currency/:from/:to/:amount", (req, res) => {
           const $ = cheerio.load(html);
           let currency;
           $(".result__BigRate-sc-1bsijpp-1", html).each(function () {
-            const money = $(this).text().split(" ")[0];
+            let money = $(this).text().split(" ")[0];
+            money = money.replace(",","");
             currency = { money: money, updatedDate: new Date() };
             console.log("Currency: ", JSON.stringify(currency));
             cacheCurrency.set(from + "-" + to, currency);
@@ -100,7 +103,8 @@ app.get("/currency/:from/:to/:amount", (req, res) => {
         const $ = cheerio.load(html);
         let currency;
         $(".result__BigRate-sc-1bsijpp-1", html).each(function () {
-          const money = $(this).text().split(" ")[0];
+          let money = $(this).text().split(" ")[0];
+          money = money.replace(",","");
           currency = { money: money, updatedDate: new Date() };
           console.log("Currency: ", JSON.stringify(currency));
           cacheCurrency.set(from + "-" + to, currency);
@@ -179,6 +183,7 @@ const getCurrency = (from, to, amount) => {
 };
 
 const generateArticle = (from, to, money, result) => {
+  const amount = numberWithCommas(withTwoDecimals(money));
   return {
     baseCurrency: {
       code: from,
@@ -188,7 +193,7 @@ const generateArticle = (from, to, money, result) => {
     rateCurrency: {
       code: to,
       name: currencies.get(to),
-      amount: JSON.stringify(money),
+      amount: !amount.includes(".") ? amount + ".00" : amount
     },
     updatedDate: new Date(),
   };
