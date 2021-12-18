@@ -131,7 +131,7 @@ app.get("/currencies", (req, res) => {
     return res.json(cacheCurrency.get("currencies"));
   } else {
     console.log("not cached");
-    axios
+    getAxiosInstance()
       .get("https://www.xe.com/currency/")
       .then((response) => {
         const html = response.data;
