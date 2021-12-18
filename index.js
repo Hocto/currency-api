@@ -54,7 +54,13 @@ app.get("/currency/:from/:to/:amount", (req, res) => {
             "&From=" +
             from +
             "&To=" +
-            to
+            to,
+          {
+            headers: {
+              "User-Agent":
+                "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.110 Safari/537.36",
+            },
+          }
         )
         .then((response) => {
           console.log("Response time: " + (new Date().getTime() - millis));
@@ -97,7 +103,13 @@ app.get("/currency/:from/:to/:amount", (req, res) => {
           "&From=" +
           from +
           "&To=" +
-          to
+          to,
+        {
+          headers: {
+            "User-Agent":
+              "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.110 Safari/537.36",
+          },
+        }
       )
       .then((response) => {
         console.log("Response time: " + (new Date().getTime() - millis));
@@ -132,7 +144,12 @@ app.get("/currencies", (req, res) => {
   } else {
     console.log("not cached");
     getAxiosInstance()
-      .get("https://www.xe.com/currency/")
+      .get("https://www.xe.com/currency/", {
+        headers: {
+          "User-Agent":
+            "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.110 Safari/537.36",
+        },
+      })
       .then((response) => {
         const html = response.data;
         const $ = cheerio.load(html);
