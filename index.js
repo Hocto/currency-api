@@ -1,7 +1,6 @@
 const PORT = process.env.PORT || 8000;
 const express = require("express");
 const cheerio = require("cheerio");
-const axios = require("axios");
 const morgan = require("morgan");
 const currencies = require("./common/currencies");
 const cachedRates = require("./common/cachedRates");
@@ -10,11 +9,14 @@ const numberWithCommas = require("./common/numberWithCommas");
 const withTwoDecimals = require("./common/withTwoDecimals");
 const formatter = require("./common/formatter");
 const moesifMiddleware = require("./common/moesif");
+const ProxyLists = require("proxy-lists");
+const axiosLib = require("axios");
 
 const app = express();
 
 let currencyList = {};
 let cacheCurrency = new Map();
+let proxyAgents = [];
 
 app.use(morgan("tiny"));
 app.use(moesifMiddleware);
@@ -45,7 +47,7 @@ app.get("/currency/:from/:to/:amount", (req, res) => {
     ) {
       console.log("Data is old to view, it will be fetched.");
       let millis = new Date().getTime();
-      axios
+      getAxiosInstance()
         .get(
           "https://www.xe.com/currencyconverter/convert/?Amount=" +
             1 +
@@ -61,7 +63,7 @@ app.get("/currency/:from/:to/:amount", (req, res) => {
           let currency;
           $(".result__BigRate-sc-1bsijpp-1", html).each(function () {
             let money = $(this).text().split(" ")[0];
-            money = money.replace(",","");
+            money = money.replace(",", "");
             currency = { money: money, updatedDate: new Date() };
             console.log("Currency: ", JSON.stringify(currency));
             cacheCurrency.set(from + "-" + to, currency);
@@ -88,7 +90,7 @@ app.get("/currency/:from/:to/:amount", (req, res) => {
   } else {
     console.log("Fetched this rates for first time.");
     let millis = new Date().getTime();
-    axios
+    getAxiosInstance()
       .get(
         "https://www.xe.com/currencyconverter/convert/?Amount=" +
           1 +
@@ -104,7 +106,7 @@ app.get("/currency/:from/:to/:amount", (req, res) => {
         let currency;
         $(".result__BigRate-sc-1bsijpp-1", html).each(function () {
           let money = $(this).text().split(" ")[0];
-          money = money.replace(",","");
+          money = money.replace(",", "");
           currency = { money: money, updatedDate: new Date() };
           console.log("Currency: ", JSON.stringify(currency));
           cacheCurrency.set(from + "-" + to, currency);
@@ -124,29 +126,28 @@ app.get("/currency/:from/:to/:amount", (req, res) => {
 });
 
 app.get("/currencies", (req, res) => {
-  if( cacheCurrency.get("currencies") !== undefined ){
+  if (cacheCurrency.get("currencies") !== undefined) {
     console.log("cached");
-    return res.json(cacheCurrency.get("currencies"))
-  }
-  else {
+    return res.json(cacheCurrency.get("currencies"));
+  } else {
     console.log("not cached");
     axios
-    .get("https://www.xe.com/currency/")
-    .then((response) => {
-      const html = response.data;
-      const $ = cheerio.load(html);
-      $(".currency__ListLink-sc-1xymln9-6", html).each(function () {
-        const baseCode = $(this).text().trim();
-        const codes = baseCode.split("-");
-        currencyList[codes[0].trim()] = codes[1].trim();
+      .get("https://www.xe.com/currency/")
+      .then((response) => {
+        const html = response.data;
+        const $ = cheerio.load(html);
+        $(".currency__ListLink-sc-1xymln9-6", html).each(function () {
+          const baseCode = $(this).text().trim();
+          const codes = baseCode.split("-");
+          currencyList[codes[0].trim()] = codes[1].trim();
+        });
+        cacheCurrency.set("currencies", currencyList);
+        return res.json(currencyList);
+      })
+      .catch((e) => {
+        console.log("Error: " + e);
+        return { error: true, cause: e };
       });
-      cacheCurrency.set("currencies", currencyList);
-      return res.json(currencyList);
-    })
-    .catch((e) => {
-      console.log("Error: " + e);
-      return { error: true, cause: e };
-    });
   }
 });
 
@@ -193,7 +194,7 @@ const generateArticle = (from, to, money, result) => {
     rateCurrency: {
       code: to,
       name: currencies.get(to),
-      amount: !amount.includes(".") ? amount + ".00" : amount
+      amount: !amount.includes(".") ? amount + ".00" : amount,
     },
     updatedDate: new Date(),
   };
@@ -265,4 +266,47 @@ const init = (from, to, reverse) => {
 };
 
 var reverse = false;
-init(0, 0, reverse);
+//init(0, 0, reverse);
+
+const getProxyAgents = () => {
+  const proxyAgentList = [];
+  console.log("Proxies are being fetched...");
+  // `getProxies` returns an event emitter.
+  ProxyLists.getProxies({
+    anonymityLevels: ["elite"],
+    protocols: ["https"],
+  })
+    .on("data", (proxies) => {
+      proxies.forEach(function (v) {
+        proxyAgentList.push(v);
+      });
+    })
+    /*.on("error", (error) => {
+      console.log(
+        "Exception was occured while specific proxy is being fetched!"
+      );
+    })*/
+    .once("end", () => {
+      console.log("Proxy fetch is ended!");
+    });
+
+  proxyAgents = proxyAgentList;
+  setTimeout(function () {
+    console.log("We have " + proxyAgents.length + " proxy agents.");
+    getProxyAgents();
+  }, 300000);
+};
+
+const getAxiosInstance = () => {
+  const agentIndex = Math.floor(Math.random() * (proxyAgents.length - 1));
+  const axiosDefaultConfig = {
+    host: proxyAgents[agentIndex].ipAddress,
+    port: proxyAgents[agentIndex].port,
+  };
+  console.log(
+    agentIndex + 1 + " -> " + JSON.stringify(proxyAgents[agentIndex])
+  );
+  return axiosLib.create(axiosDefaultConfig);
+};
+
+getProxyAgents();
