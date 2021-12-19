@@ -25,18 +25,27 @@ app.listen(PORT, () => {
   console.log(`server running on PORT: ${PORT}`);
 });
 
+//Swagger Integration
+var swaggerUi = require('swagger-ui-express');
+    
+swaggerDocument = require('./swagger.json');
+app.use('/swagger-ui', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+
 app.get("/currency/:from/:to/:amount", (req, res) => {
   const from = req.params.from;
   const to = req.params.to;
   const amount = req.params.amount;
   if (amount.includes(",")) {
-    return res.json({ message: "Amount should not contain comma" });
+    res.status(203);
+    return res.json({ error: true, message: "Amount should not contain comma" });
   }
   if (!isNumber(amount)) {
-    return res.json({ message: "Amount should be numeric" });
+    res.status(202);
+    return res.json({ error: true, message: "Amount should be numeric" });
   }
   if (currencies.get(from) == undefined || currencies.get(to) == undefined) {
-    return res.json({ message: "Invalid currency code" });
+    res.status(201);
+    return res.json({ error: true, message: "Invalid currency code" });
   }
   const fromFormatter = formatter(from);
   const result = fromFormatter.format(amount);
@@ -83,7 +92,7 @@ app.get("/currency/:from/:to/:amount", (req, res) => {
         })
         .catch((e) => {
           console.log("error: " + e);
-          return { error: true, cause: e };
+          return { error: true, message: e };
         });
     } else {
       console.log("Data is coming from cache.");
@@ -132,7 +141,7 @@ app.get("/currency/:from/:to/:amount", (req, res) => {
       })
       .catch((e) => {
         console.log("error: " + e);
-        return { error: true, cause: e };
+        return { error: true, message: e };
       });
   }
 });
@@ -163,7 +172,7 @@ app.get("/currencies", (req, res) => {
       })
       .catch((e) => {
         console.log("Error: " + e);
-        return { error: true, cause: e };
+        return { error: true, message: e };
       });
   }
 });
@@ -196,7 +205,7 @@ const getCurrency = (from, to, amount) => {
     })
     .catch((e) => {
       console.log("error: " + e);
-      return { error: true, cause: e };
+      return { error: true, message: e };
     });
 };
 

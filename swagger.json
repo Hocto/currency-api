@@ -1,0 +1,214 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "version": "1.0.2",
+    "title": "Currenfy",
+    "description": "Currency API providing official currency rates. This API provides currency rates for all official money units, precious metals and BTC."
+  },
+  "tags": [
+    {
+      "name": "Currency",
+      "description": "Providing currency rates for available currencies."
+    },
+    {
+      "name": "Currencies",
+      "description": "Providing available currencies"
+    }
+  ],
+  "consumes": ["application/json"],
+  "produces": ["application/json"],
+  "paths": {
+    "/currency/{from}/{to}/{amount}": {
+      "get": {
+        "tags": ["Currency"],
+        "summary": "Get currency rate between two units",
+        "parameters": [
+          {
+            "name": "from",
+            "in": "path",
+            "required": true,
+            "description": "Base Currency",
+            "type": "string"
+          },
+          {
+            "name": "to",
+            "in": "path",
+            "required": true,
+            "description": "Rate Currency",
+            "type": "string"
+          },
+          {
+            "name": "amount",
+            "in": "path",
+            "required": true,
+            "description": "Base Amount",
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/CurrencyRate"
+            }
+          },
+          "201": {
+            "description": "Check Base and Rate Currencies in Path",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "type": "boolean",
+                  "example": true
+                },
+                "message": {
+                  "type": "string",
+                  "example": "Invalid currency code"
+                }
+              }
+            }
+          },
+          "202": {
+            "description": "Amount Format",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "type": "boolean",
+                  "example": true
+                },
+                "message": {
+                  "type": "string",
+                  "example": "Amount should be numeric"
+                }
+              }
+            }
+          },
+          "203": {
+            "description": "Amount With Comma",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "type": "boolean",
+                  "example": true
+                },
+                "message": {
+                  "type": "string",
+                  "example": "Amount should not contain comma"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Error",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "type": "boolean",
+                  "example": true
+                },
+                "message": {
+                  "type": "string",
+                  "example": "Internal Server Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/currencies": {
+      "get": {
+        "tags": ["Currencies"],
+        "summary": "List Available Currencies",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/CurrencyList"
+            }
+          },
+          "500": {
+            "description": "Error",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "type": "boolean",
+                  "example": true
+                },
+                "message": {
+                  "type": "string",
+                  "example": "Internal Server Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "CurrencyRate": {
+      "type": "object",
+      "properties": {
+        "baseCurrency": {
+          "properties": {
+            "code": {
+              "type": "string",
+              "example": "EUR"
+            },
+            "name": {
+              "type": "string",
+              "example": "Euro"
+            },
+            "amount": {
+              "type": "string",
+              "example": "1.00"
+            }
+          }
+        },
+        "rateCurrency": {
+          "properties": {
+            "code": {
+              "type": "string",
+              "example": "USD"
+            },
+            "name": {
+              "type": "string",
+              "example": "US Dollar"
+            },
+            "amount": {
+              "type": "string",
+              "example": "1.123"
+            }
+          }
+        },
+        "updatedDate": {
+          "type": "string",
+          "example": "2021-12-01T00:00:07.523Z"
+        }
+      }
+    },
+    "CurrencyList": {
+      "type": "object",
+      "properties": {
+        "USD": {
+          "type": "string",
+          "example": "US Dollar"
+        },
+        "EUR": {
+          "type": "string",
+          "example": "Euro"
+        },
+        "GBP": {
+          "type": "string",
+          "example": "British Pound"
+        }
+      }
+    }
+  }
+}
