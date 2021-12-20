@@ -72,6 +72,7 @@ app.get("/currency/:from/:to/:amount", (req, res) => {
           }
         )
         .then((response) => {
+          console.log("Remote address of socket: " + response.request.socket.remoteAddress);
           console.log("Response time: " + (new Date().getTime() - millis));
           const html = response.data;
           const $ = cheerio.load(html);
@@ -121,6 +122,7 @@ app.get("/currency/:from/:to/:amount", (req, res) => {
         }
       )
       .then((response) => {
+        console.log("Remote address of socket: " + response.request.socket.remoteAddress);
         console.log("Response time: " + (new Date().getTime() - millis));
         const html = response.data;
         const $ = cheerio.load(html);
@@ -160,6 +162,7 @@ app.get("/currencies", (req, res) => {
         },
       })
       .then((response) => {
+        console.log("Remote address of socket: " + response.request.socket.remoteAddress);
         const html = response.data;
         const $ = cheerio.load(html);
         $(".currency__ListLink-sc-1xymln9-6", html).each(function () {
