@@ -1,9 +1,9 @@
 {
-  "swagger": "2.0",
+  "openapi": "3.0.3",
   "info": {
-    "version": "1.0.2",
-    "title": "Currenfy",
-    "description": "Currency API providing official currency rates. This API provides currency rates for all official money units, precious metals and BTC."
+    "version": "1.0.0",
+    "title": "Global Currency",
+    "description": "Currency API providing official global currency rates. This API provides currency rates for official money units, precious metals and BTC."
   },
   "tags": [
     {
@@ -48,76 +48,77 @@
         "responses": {
           "200": {
             "description": "OK",
-            "schema": {
-              "$ref": "#/definitions/CurrencyRate"
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/definitions/CurrencyRate"
+                }
+              }
             }
           },
-          "500": [
-            {
-              "description": "Check Base and Rate Currencies in Path",
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "error": {
-                    "type": "boolean",
-                    "example": true
-                  },
-                  "message": {
-                    "type": "string",
-                    "example": "Invalid currency code"
-                  }
-                }
-              }
-            },
-            {
-              "description": "Amount Format",
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "error": {
-                    "type": "boolean",
-                    "example": true
-                  },
-                  "message": {
-                    "type": "string",
-                    "example": "Amount should be numeric"
-                  }
-                }
-              }
-            },
-            {
-              "description": "Amount With Comma",
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "error": {
-                    "type": "boolean",
-                    "example": true
-                  },
-                  "message": {
-                    "type": "string",
-                    "example": "Amount should not contain comma"
-                  }
-                }
-              }
-            },
-            {
-              "description": "Error",
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "error": {
-                    "type": "boolean",
-                    "example": true
-                  },
-                  "message": {
-                    "type": "string",
-                    "example": "Internal Server Error"
-                  }
+          "500": {
+            "description": "Check Base and Rate Currencies in Path",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "error": {
+                          "type": "boolean",
+                          "example": true
+                        },
+                        "message": {
+                          "type": "string",
+                          "example": "Invalid currency code"
+                        }
+                      }
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "error": {
+                          "type": "boolean",
+                          "example": true
+                        },
+                        "message": {
+                          "type": "string",
+                          "example": "Amount should be numeric"
+                        }
+                      }
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "error": {
+                          "type": "boolean",
+                          "example": true
+                        },
+                        "message": {
+                          "type": "string",
+                          "example": "Amount should not contain comma"
+                        }
+                      }
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "error": {
+                          "type": "boolean",
+                          "example": true
+                        },
+                        "message": {
+                          "type": "string",
+                          "example": "Internal Server Error"
+                        }
+                      }
+                    }
+                  ]
                 }
               }
             }
-          ]
+          }
         }
       }
     },
@@ -129,22 +130,30 @@
         "responses": {
           "200": {
             "description": "OK",
-            "schema": {
-              "$ref": "#/definitions/CurrencyList"
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/definitions/CurrencyList"
+                }
+              }
             }
           },
           "500": {
             "description": "Error",
-            "schema": {
-              "type": "object",
-              "properties": {
-                "error": {
-                  "type": "boolean",
-                  "example": true
-                },
-                "message": {
-                  "type": "string",
-                  "example": "Internal Server Error"
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Internal Server Error"
+                    }
+                  }
                 }
               }
             }
