@@ -32,8 +32,8 @@ swaggerDocument = require('./swagger.json');
 app.use('/swagger-ui', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 app.get("/currency/:from/:to/:amount", (req, res) => {
-  const from = req.params.from;
-  const to = req.params.to;
+  let from = req.params.from.toUpperCase();
+  let to = req.params.to.toUpperCase();
   const amount = req.params.amount;
   if (amount.includes(",")) {
     res.status(500);
