@@ -52,70 +52,72 @@
               "$ref": "#/definitions/CurrencyRate"
             }
           },
-          "201": {
-            "description": "Check Base and Rate Currencies in Path",
-            "schema": {
-              "type": "object",
-              "properties": {
-                "error": {
-                  "type": "boolean",
-                  "example": true
-                },
-                "message": {
-                  "type": "string",
-                  "example": "Invalid currency code"
+          "500": [
+            {
+              "description": "Check Base and Rate Currencies in Path",
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "error": {
+                    "type": "boolean",
+                    "example": true
+                  },
+                  "message": {
+                    "type": "string",
+                    "example": "Invalid currency code"
+                  }
+                }
+              }
+            },
+            {
+              "description": "Amount Format",
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "error": {
+                    "type": "boolean",
+                    "example": true
+                  },
+                  "message": {
+                    "type": "string",
+                    "example": "Amount should be numeric"
+                  }
+                }
+              }
+            },
+            {
+              "description": "Amount With Comma",
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "error": {
+                    "type": "boolean",
+                    "example": true
+                  },
+                  "message": {
+                    "type": "string",
+                    "example": "Amount should not contain comma"
+                  }
+                }
+              }
+            },
+            {
+              "description": "Error",
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "error": {
+                    "type": "boolean",
+                    "example": true
+                  },
+                  "message": {
+                    "type": "string",
+                    "example": "Internal Server Error"
+                  }
                 }
               }
             }
-          },
-          "202": {
-            "description": "Amount Format",
-            "schema": {
-              "type": "object",
-              "properties": {
-                "error": {
-                  "type": "boolean",
-                  "example": true
-                },
-                "message": {
-                  "type": "string",
-                  "example": "Amount should be numeric"
-                }
-              }
-            }
-          },
-          "203": {
-            "description": "Amount With Comma",
-            "schema": {
-              "type": "object",
-              "properties": {
-                "error": {
-                  "type": "boolean",
-                  "example": true
-                },
-                "message": {
-                  "type": "string",
-                  "example": "Amount should not contain comma"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Error",
-            "schema": {
-              "type": "object",
-              "properties": {
-                "error": {
-                  "type": "boolean",
-                  "example": true
-                },
-                "message": {
-                  "type": "string",
-                  "example": "Internal Server Error"
-                }
-              }
-            }
-          }
+          ]
         }
       }
     },
