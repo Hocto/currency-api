@@ -36,15 +36,15 @@ app.get("/currency/:from/:to/:amount", (req, res) => {
   const to = req.params.to;
   const amount = req.params.amount;
   if (amount.includes(",")) {
-    res.status(503);
+    res.status(500);
     return res.json({ error: true, message: "Amount should not contain comma" });
   }
   if (!isNumber(amount)) {
-    res.status(502);
+    res.status(500);
     return res.json({ error: true, message: "Amount should be numeric" });
   }
   if (currencies.get(from) == undefined || currencies.get(to) == undefined) {
-    res.status(501);
+    res.status(500);
     return res.json({ error: true, message: "Invalid currency code" });
   }
   const fromFormatter = formatter(from);
