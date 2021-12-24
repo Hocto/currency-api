@@ -36,15 +36,15 @@ app.get("/currency/:from/:to/:amount", (req, res) => {
   const to = req.params.to;
   const amount = req.params.amount;
   if (amount.includes(",")) {
-    res.status(203);
+    res.status(503);
     return res.json({ error: true, message: "Amount should not contain comma" });
   }
   if (!isNumber(amount)) {
-    res.status(202);
+    res.status(502);
     return res.json({ error: true, message: "Amount should be numeric" });
   }
   if (currencies.get(from) == undefined || currencies.get(to) == undefined) {
-    res.status(201);
+    res.status(501);
     return res.json({ error: true, message: "Invalid currency code" });
   }
   const fromFormatter = formatter(from);
@@ -93,6 +93,7 @@ app.get("/currency/:from/:to/:amount", (req, res) => {
         })
         .catch((e) => {
           console.log("error: " + e);
+          res.status(500);
           return { error: true, message: e };
         });
     } else {
@@ -143,6 +144,7 @@ app.get("/currency/:from/:to/:amount", (req, res) => {
       })
       .catch((e) => {
         console.log("error: " + e);
+        res.status(500);
         return { error: true, message: e };
       });
   }
@@ -175,6 +177,7 @@ app.get("/currencies", (req, res) => {
       })
       .catch((e) => {
         console.log("Error: " + e);
+        res.status(500);
         return { error: true, message: e };
       });
   }
@@ -208,6 +211,7 @@ const getCurrency = (from, to, amount) => {
     })
     .catch((e) => {
       console.log("error: " + e);
+      res.status(500);
       return { error: true, message: e };
     });
 };
